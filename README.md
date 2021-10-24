@@ -5,4 +5,4 @@ A python implementation of interpreter for lox language, following the structure
 ## Under development
 - [x] Scanning
 - [x] Representing Code
-
+- [x] Evaluating Expressions
