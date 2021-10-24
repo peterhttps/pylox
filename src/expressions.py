@@ -4,51 +4,51 @@ from tokenC import TokenC
 
 class ExprVisitor(ABC):
     @abstractmethod
-    def visit_assign_expr(self, expr: 'Expr'):
+    def visitAssignExpr(self, expr: 'Expr'):
+        pass
+    
+    @abstractmethod
+    def visitBinaryExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_binary_expr(self, expr: 'Expr'):
+    def visitCallExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_call_expr(self, expr: 'Expr'):
+    def visitGetExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_get_expr(self, expr: 'Expr'):
+    def visitGroupingExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_grouping_expr(self, expr: 'Expr'):
+    def visitLiteralExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_literal_expr(self, expr: 'Expr'):
+    def visitLogicalExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_logical_expr(self, expr: 'Expr'):
+    def visitSetExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_set_expr(self, expr: 'Expr'):
+    def visitSuperExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_super_expr(self, expr: 'Expr'):
+    def visitThisExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_this_expr(self, expr: 'Expr'):
+    def visitUnaryExpr(self, expr: 'Expr'):
         pass
 
     @abstractmethod
-    def visit_unary_expr(self, expr: 'Expr'):
-        pass
-
-    @abstractmethod
-    def visit_variable_expr(self, expr: 'Expr'):
+    def visitVariableExpr(self, expr: 'Expr'):
         pass
 
 
@@ -64,7 +64,7 @@ class Assign(Expr):
         self.value = value
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_assign_expr(self)
+        return visitor.visitAssignExpr(self)
 
 
 class Binary(Expr):
@@ -74,7 +74,7 @@ class Binary(Expr):
         self.right = right
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_binary_expr(self)
+        return visitor.visitBinaryExpr(self)
 
 
 class Call(Expr):
@@ -84,7 +84,7 @@ class Call(Expr):
         self.arguments = arguments
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_call_expr(self)
+        return visitor.visitCallExpr(self)
 
 
 class Get(Expr):
@@ -93,7 +93,7 @@ class Get(Expr):
         self.name = name
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_get_expr(self)
+        return visitor.visitGetExpr(self)
 
 
 class Grouping(Expr):
@@ -101,7 +101,7 @@ class Grouping(Expr):
         self.expression = expression
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_grouping_expr(self)
+        return visitor.visitGroupingExpr(self)
 
 
 class Literal(Expr):
@@ -109,7 +109,7 @@ class Literal(Expr):
         self.value = value
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_literal_expr(self)
+        return visitor.visitLiteralExpr(self)
 
 
 class Logical(Expr):
@@ -119,7 +119,7 @@ class Logical(Expr):
         self.right = right
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_logical_expr(self)
+        return visitor.visitLogicalExpr(self)
 
 
 class Set(Expr):
@@ -129,7 +129,7 @@ class Set(Expr):
         self.value = value
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_set_expr(self)
+        return visitor.visitSetExpr(self)
 
 
 class Super(Expr):
@@ -138,7 +138,7 @@ class Super(Expr):
         self.method = method
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_super_expr(self)
+        return visitor.visitSuperExpr(self)
 
 
 class This(Expr):
@@ -146,7 +146,7 @@ class This(Expr):
         self.keyword = keyword
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_this_expr(self)
+        return visitor.visitThisExpr(self)
 
 
 class Unary(Expr):
@@ -155,7 +155,7 @@ class Unary(Expr):
         self.right = right
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_unary_expr(self)
+        return visitor.visitUnaryExpr(self)
 
 
 class Variable(Expr):

@@ -1,4 +1,5 @@
 import sys
+from interpreter import Interpreter
 from scanner import *
 from parserC import ParserC
 from ast_printer import AstPrinter
@@ -36,8 +37,15 @@ class Lox:
     tokens = scanner.scanTokens()
     parser = ParserC(tokens)
     expression = parser.parse()
+    interpreter = Interpreter()
 
-    print(AstPrinter().print(expression))
+    if (self.hadError):
+      return
+
+    interpreter.interpret(expression)
+    # print(AstPrinter().print(expression))
+
+
 
   def error(self, line: int, message: str):
     self.report(line, "", message)

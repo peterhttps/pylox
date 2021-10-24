@@ -1,7 +1,7 @@
 import expressions
 from tokenType import TokenType
 
-class ParseError(RuntimeError):
+class ParserError(RuntimeError):
   def __init__(self, token, message):
     super().__init__(message)
     self.token = token
@@ -56,7 +56,7 @@ class ParserC:
   def comparison(self):
     expr = self.term()
 
-    while (self.match([TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
+    while (self.match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])):
       operator = self.previous()
       right = self.term()
       expr = expressions.Binary(expr, operator, right)
@@ -116,7 +116,7 @@ class ParserC:
     raise self.error(self.peek(), message)
 
   def error(self, token, message):
-    return ParseError(token, message)
+    return ParserError(token, message)
       
   def synchronize(self):
     self.advance()

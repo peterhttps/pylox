@@ -133,7 +133,7 @@ class Scanner:
     if (self.source[self.current] != expected):
       return False
     
-    self.curent = self.curent + 1
+    self.current = self.current + 1
     return True
   
   def peek(self):
