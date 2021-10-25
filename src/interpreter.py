@@ -1,10 +1,14 @@
 from os import stat
+from environment import Environment
 import expressions
 import statements
 from tokenType import TokenType
 from parserC import ParserError
 
 class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
+  def __init__(self):
+    self.enviroment = Environment()
+
   def visitLiteralExpr(self, expr: expressions.Literal):
     return str(expr.value)
 
@@ -160,8 +164,17 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
   def visitThisExpr(self, expr: 'expressions.Expr'):
     pass
 
-  def visitVariableExpr(self, expr: 'expressions.Expr'):
-    pass
+  def visitVariableExpr(self, expr: expressions.Variable):
+    return self.enviroment.get(expr.name)
+
+  def visitVarStmt(self, stmt: statements.Var):
+    value = None
+
+    if (stmt.initializer != None):
+      value = self.evaluate(stmt.initializer)
+    
+    self.enviroment.define(stmt.name.lexeme, value)
+    return None
 
   def visitExpressionStmt(self, stmt: statements.Expression):
     self.evaluate(stmt.expression)
@@ -169,6 +182,6 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
   def visitPrintStmt(self, stmt: statements.Print):
     value = self.evaluate(stmt.expression)
-    print(str(value))
+    print(self.stringify(value))
     return None
 

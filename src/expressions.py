@@ -163,4 +163,4 @@ class Variable(Expr):
         self.name = name
 
     def accept(self, visitor: ExprVisitor):
-        return visitor.visit_variable_expr(self)
+        return visitor.visitVariableExpr(self)

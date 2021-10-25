@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from expressions import Expr
+from tokenC import TokenC
 
 class StmtVisitor(ABC):
     @abstractmethod
@@ -9,6 +10,10 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visitPrintStmt(self, expr: 'Stmt'):
+        pass
+
+    @abstractmethod
+    def visitVarStmt(self, expr: 'Stmt'):
         pass
 
 
@@ -32,3 +37,11 @@ class Print(Stmt):
 
     def accept(self, visitor: StmtVisitor):
         return visitor.visitPrintStmt(self)
+
+class Var(Stmt):
+    def __init__(self, name: TokenC, initializer):
+        self.name = name
+        self.initializer = initializer
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visitVarStmt(self)

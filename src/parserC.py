@@ -100,10 +100,10 @@ class ParserC:
       return expressions.Literal(True)
     if (self.match([TokenType.NIL])):
       return expressions.Literal(None)
-
     if (self.match([TokenType.NUMBER, TokenType.STRING])):
       return expressions.Literal(self.previous().literal)
-
+    if (self.match([TokenType.IDENTIFIER])):
+      return expressions.Variable(self.previous())
     if (self.match([TokenType.LEFT_PAREN])):
       expr = self.expression()
       self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression")
@@ -150,9 +150,19 @@ class ParserC:
     statements = []
 
     while (not self.isAtEnd()):
-      statements.append(self.statement())
+      statements.append(self.declaration())
 
     return statements
+
+  def declaration(self):
+    try:
+      if (self.match([TokenType.VAR])):
+        return self.varDeclaration()
+      
+      return self.statement()
+    except:
+      self.synchronize()
+      return None
 
   def statement(self):
     if (self.match([TokenType.PRINT])):
@@ -165,6 +175,16 @@ class ParserC:
     self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
 
     return statements.Print(value)
+
+  def varDeclaration(self):
+    name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
+
+    initializer = None
+    if (self.match([TokenType.EQUAL])):
+      initializer = self.expression()
+
+    self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration")
+    return statements.Var(name, initializer)
 
   def expressionStatement(self):
     expr = self.expression()

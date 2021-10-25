@@ -1,0 +1,8 @@
+var a = 2;
+var b = "test";
+
+print a;
+print b;
+
+var a = "carrot";
+print a;
