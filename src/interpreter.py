@@ -1,8 +1,10 @@
+from os import stat
 import expressions
+import statements
 from tokenType import TokenType
 from parserC import ParserError
 
-class Interpreter(expressions.ExprVisitor):
+class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
   def visitLiteralExpr(self, expr: expressions.Literal):
     return str(expr.value)
 
@@ -111,12 +113,17 @@ class Interpreter(expressions.ExprVisitor):
 
     raise ParserError(operator, "Operand must be numbers")
 
-  def interpret(self, expression):
+  def interpret(self, statements):
     try:
-      value = self.evaluate(expression)
-      print(self.stringify(value))
+      for statement in statements:
+        self.execute(statement)
+      # value = self.evaluate(expression)
+      # print(self.stringify(value))
     except:
       raise RuntimeError("error")
+
+  def execute(self, stmt: statements.Stmt):
+    stmt.accept(self)
 
   def stringify(self, object):
     if (object == None):
@@ -155,3 +162,13 @@ class Interpreter(expressions.ExprVisitor):
 
   def visitVariableExpr(self, expr: 'expressions.Expr'):
     pass
+
+  def visitExpressionStmt(self, stmt: statements.Expression):
+    self.evaluate(stmt.expression)
+    return None
+
+  def visitPrintStmt(self, stmt: statements.Print):
+    value = self.evaluate(stmt.expression)
+    print(str(value))
+    return None
+

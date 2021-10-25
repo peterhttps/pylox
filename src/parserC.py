@@ -1,4 +1,6 @@
+from os import stat
 import expressions
+import statements
 from tokenType import TokenType
 
 class ParserError(RuntimeError):
@@ -145,7 +147,27 @@ class ParserC:
       self.advance()
   
   def parse(self):
-    try:
-      return self.expression()
-    except:
-      return None
+    statements = []
+
+    while (not self.isAtEnd()):
+      statements.append(self.statement())
+
+    return statements
+
+  def statement(self):
+    if (self.match([TokenType.PRINT])):
+      return self.printStatement()
+    
+    return self.expressionStatement()
+
+  def printStatement(self):
+    value = self.expression()
+    self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+
+    return statements.Print(value)
+
+  def expressionStatement(self):
+    expr = self.expression()
+    self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
+
+    return statements.Expression(expr)

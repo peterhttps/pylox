@@ -36,13 +36,13 @@ class Lox:
     scanner = Scanner(source)
     tokens = scanner.scanTokens()
     parser = ParserC(tokens)
-    expression = parser.parse()
+    statements = parser.parse()
     interpreter = Interpreter()
 
     if (self.hadError):
       return
 
-    interpreter.interpret(expression)
+    interpreter.interpret(statements)
     # print(AstPrinter().print(expression))
 
 
