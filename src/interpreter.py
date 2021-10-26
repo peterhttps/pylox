@@ -121,8 +121,6 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     try:
       for statement in statements:
         self.execute(statement)
-      # value = self.evaluate(expression)
-      # print(self.stringify(value))
     except:
       raise RuntimeError("error")
 
@@ -141,7 +139,18 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
       
       return text
 
-    return str(object)      
+    return str(object)     
+
+  def executeBlock(self, statements, environment):
+    previous = self.enviroment
+
+    try:
+      self.enviroment = environment
+
+      for statement in statements:
+        self.execute(statement)
+    finally:
+      self.enviroment = previous
 
   def visitAssignExpr(self, expr: 'expressions.Expr'):
     pass
@@ -185,3 +194,6 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     print(self.stringify(value))
     return None
 
+  def visitBlockStmt(self, stmt: statements.Block):
+    self.executeBlock(stmt.statements, Environment(self.enviroment))
+    return None

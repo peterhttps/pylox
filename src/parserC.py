@@ -168,6 +168,9 @@ class ParserC:
     if (self.match([TokenType.PRINT])):
       return self.printStatement()
     
+    if (self.match([TokenType.LEFT_BRACE])):
+      return statements.Block(self.block())
+
     return self.expressionStatement()
 
   def printStatement(self):
@@ -175,6 +178,16 @@ class ParserC:
     self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
 
     return statements.Print(value)
+
+  def block(self):
+    statements = []
+
+    while ((not self.check(TokenType.RIGHT_BRACE)) and (not self.isAtEnd())):
+      statements.append(self.declaration())
+
+    self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+
+    return statements
 
   def varDeclaration(self):
     name = self.consume(TokenType.IDENTIFIER, "Expect variable name.")
@@ -188,6 +201,7 @@ class ParserC:
 
   def expressionStatement(self):
     expr = self.expression()
+
     self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
 
     return statements.Expression(expr)
