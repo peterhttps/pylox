@@ -51,6 +51,10 @@ class ExprVisitor(ABC):
     def visitVariableExpr(self, expr: 'Expr'):
         pass
 
+    @abstractmethod
+    def visitLogicalExpr(self, expr: 'Expr'):
+        pass
+
 
 class Expr(ABC):
     @abstractmethod
@@ -164,3 +168,12 @@ class Variable(Expr):
 
     def accept(self, visitor: ExprVisitor):
         return visitor.visitVariableExpr(self)
+
+class Logical(Expr):
+    def __init__(self, left, operator, right):
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visitLogicalExpr(self) 

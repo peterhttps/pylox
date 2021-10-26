@@ -68,6 +68,12 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
       if (isinstance(left, str) and isinstance(right, str)):
         return float(left) + float(right)
 
+      if (isinstance(left, str) and isinstance(right, float)):
+        return float(left) + float(right)
+
+      if (isinstance(left, float) and isinstance(right, str)):
+        return float(left) + float(right)
+
       raise ParserError(expr.operator, "Operands must be two numbers or two strings.")
     elif (expr.operator.type == TokenType.SLASH):
       self.checkNumberOperands(expr.operator, left, right)
@@ -152,8 +158,11 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     finally:
       self.enviroment = previous
 
-  def visitAssignExpr(self, expr: 'expressions.Expr'):
-    pass
+  def visitAssignExpr(self, expr: expressions.Assign):
+    value = self.evaluate(expr.value)
+
+    self.enviroment.assign(expr.name, value)
+    return value
 
   def visitCallExpr(self, expr: 'expressions.Expr'):
     pass
@@ -196,4 +205,31 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
   def visitBlockStmt(self, stmt: statements.Block):
     self.executeBlock(stmt.statements, Environment(self.enviroment))
+    return None
+
+  def visitIfStmt(self, stmt: statements.If):
+
+    if (self.isTruthy(self.evaluate(stmt.condition))):
+      self.execute(stmt.thenBranch)
+    elif (stmt.elseBranch != None) :
+      self.execute(stmt.elseBranch)
+
+    return None
+
+  def visitLogicalExpr(self, expr: expressions.Logical):
+    left = self.evaluate(expr.left)
+
+    if (expr.operator.type == TokenType.OR):
+      if (self.isTruthy(left)):
+        return left
+      else:
+        if (not self.isTruthy(left)):
+          return left
+        
+    return self.evaluate(expr.right)
+
+  def visitWhileStmt(self, stmt: statements.While):
+    while (self.isTruthy(self.evaluate(stmt.condition))):
+      self.execute(stmt.body)
+    
     return None

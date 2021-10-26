@@ -20,6 +20,14 @@ class StmtVisitor(ABC):
     def visitBlockStmt(self, expr: 'Stmt'):
         pass
 
+    @abstractmethod
+    def visitIfStmt(self, expr: 'Stmt'):
+        pass
+
+    @abstractmethod
+    def visitWhileStmt(self, expr: 'Stmt'):
+        pass
+    
 
 class Stmt(ABC):
     @abstractmethod
@@ -56,3 +64,20 @@ class Block(Stmt):
     
     def accept(self, visitor: StmtVisitor):
         return visitor.visitBlockStmt(self)
+
+class If(Expr):
+    def __init__(self, condition, thenBranch, elseBranch):
+        self.condition = condition
+        self.thenBranch = thenBranch
+        self.elseBranch = elseBranch
+    
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visitIfStmt(self)
+
+class While(Expr):
+    def __init__(self, condition, body):
+        self.condition = condition
+        self.body = body
+    
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visitWhileStmt(self)
