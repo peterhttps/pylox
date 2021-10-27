@@ -203,7 +203,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
   def visitPrintStmt(self, stmt: statements.Print):
     value = self.evaluate(stmt.expression)
-    print(self.stringify(value))
+
     return None
 
   def visitBlockStmt(self, stmt: statements.Block):
@@ -238,7 +238,6 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     return None
 
   def visitCallExpr(self, expr: expressions.Call):
-    print(expr.callee)
     function = self.evaluate(expr.callee)
 
     arguments = []
@@ -258,6 +257,6 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
   def visitFunctionStmt(self, stmt: statements.Function):
     function = LoxFunction(stmt)
-    print(stmt.name.lexeme)
+
     self.environment.define(stmt.name.lexeme, function)
     return None

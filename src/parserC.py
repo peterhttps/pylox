@@ -95,7 +95,6 @@ class ParserC:
 
   def finishCall(self, callee):
     arguments = []
-    # print(self.tokens[self.current].lexeme)
 
     if (not self.check(TokenType.RIGHT_PAREN)):
       arguments.append(self.expression())
@@ -178,7 +177,7 @@ class ParserC:
 
     while (not self.isAtEnd()):
       statements.append(self.declaration())
-    print(statements[0].name.lexeme)
+
     return statements
 
   def declaration(self):
