@@ -55,6 +55,10 @@ class ExprVisitor(ABC):
     def visitLogicalExpr(self, expr: 'Expr'):
         pass
 
+    @abstractmethod
+    def visitCallExpr(self, expr: 'Expr'):
+        pass
+
 
 class Expr(ABC):
     @abstractmethod
@@ -177,3 +181,12 @@ class Logical(Expr):
 
     def accept(self, visitor: ExprVisitor):
         return visitor.visitLogicalExpr(self) 
+
+class Call(Expr):
+    def __init__(self, callee, paren, arguments):
+        self.callee = callee
+        self.paren = paren
+        self.arguments = arguments
+
+    def accept(self, visitor: ExprVisitor):
+        return visitor.visitCallExpr(self) 

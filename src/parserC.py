@@ -37,7 +37,7 @@ class ParserC:
   def check(self, type):
     if (self.isAtEnd()):
       return False
-    
+
     return self.peek().type == type
 
   def advance(self):
@@ -91,7 +91,34 @@ class ParserC:
       right = self.unary()
       return expressions.Unary(operator, right)
 
-    return self.primary()
+    return self.call()
+
+  def finishCall(self, callee):
+    arguments = []
+    # print(self.tokens[self.current].lexeme)
+
+    if (not self.check(TokenType.RIGHT_PAREN)):
+      arguments.append(self.expression())
+      while (self.match([TokenType.COMMA])):
+        if (len(arguments) >= 255):
+          self.error(self.peek(), "Can't have more than 255 arguments.")
+
+        arguments.append(self.expression())
+
+    paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+
+    return expressions.Call(callee, paren, arguments)
+
+  def call(self):
+    expr = self.primary()
+
+    while True:
+      if (self.match([TokenType.LEFT_PAREN])):
+        expr = self.finishCall(expr)
+      else:
+        break
+
+    return expr
 
   def primary(self):
     if (self.match([TokenType.FALSE])):
@@ -151,11 +178,13 @@ class ParserC:
 
     while (not self.isAtEnd()):
       statements.append(self.declaration())
-
+    print(statements[0].name.lexeme)
     return statements
 
   def declaration(self):
     try:
+      if (self.match([TokenType.FUN])):
+        return self.function("function")
       if (self.match([TokenType.VAR])):
         return self.varDeclaration()
       
@@ -272,6 +301,27 @@ class ParserC:
     self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
 
     return statements.Expression(expr)
+
+  def function(self, kind):
+    name = self.consume(TokenType.IDENTIFIER, f"Expect {kind} name.")
+    self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
+    parameters = []
+
+    if (not self.check(TokenType.RIGHT_PAREN)):
+      while True:
+        if (len(parameters) >= 255):
+          self.error(self.peek(), "Can't have more than 255 parameters.")
+
+        parameters.append(self.consume(TokenType.IDENTIFIER, "Expect parameter name."))
+
+        if (not self.match([TokenType.COMMA])):
+          break
+    
+    self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+    self.consume(TokenType.LEFT_BRACE, "Expect '{' before {kind} body.")
+    body = self.block()
+
+    return statements.Function(name, parameters, body)
 
   def assignment(self):
     expr = self.orOp()

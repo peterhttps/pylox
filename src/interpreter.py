@@ -1,13 +1,19 @@
 from os import stat
+from clock import Clock
 from environment import Environment
 import expressions
+from loxCallable import LoxCallable
+from loxFunction import LoxFunction
 import statements
 from tokenType import TokenType
 from parserC import ParserError
 
 class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
   def __init__(self):
-    self.enviroment = Environment()
+    self.globals = Environment()
+    self.environment = self.globals
+  
+    self.globals.define("clock", Clock())
 
   def visitLiteralExpr(self, expr: expressions.Literal):
     return str(expr.value)
@@ -66,7 +72,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         return float(left) + float(right)
 
       if (isinstance(left, str) and isinstance(right, str)):
-        return float(left) + float(right)
+        return str(left) + str(right)
 
       if (isinstance(left, str) and isinstance(right, float)):
         return float(left) + float(right)
@@ -148,24 +154,21 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     return str(object)     
 
   def executeBlock(self, statements, environment):
-    previous = self.enviroment
+    previous = self.environment
 
     try:
-      self.enviroment = environment
+      self.environment = environment
 
       for statement in statements:
         self.execute(statement)
     finally:
-      self.enviroment = previous
+      self.environment = previous
 
   def visitAssignExpr(self, expr: expressions.Assign):
     value = self.evaluate(expr.value)
 
-    self.enviroment.assign(expr.name, value)
+    self.environment.assign(expr.name, value)
     return value
-
-  def visitCallExpr(self, expr: 'expressions.Expr'):
-    pass
   
   def visitGetExpr(self, expr: 'expressions.Expr'):
     pass
@@ -183,7 +186,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     pass
 
   def visitVariableExpr(self, expr: expressions.Variable):
-    return self.enviroment.get(expr.name)
+    return self.environment.get(expr.name)
 
   def visitVarStmt(self, stmt: statements.Var):
     value = None
@@ -191,7 +194,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     if (stmt.initializer != None):
       value = self.evaluate(stmt.initializer)
     
-    self.enviroment.define(stmt.name.lexeme, value)
+    self.environment.define(stmt.name.lexeme, value)
     return None
 
   def visitExpressionStmt(self, stmt: statements.Expression):
@@ -204,7 +207,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     return None
 
   def visitBlockStmt(self, stmt: statements.Block):
-    self.executeBlock(stmt.statements, Environment(self.enviroment))
+    self.executeBlock(stmt.statements, Environment(self.environment))
     return None
 
   def visitIfStmt(self, stmt: statements.If):
@@ -232,4 +235,29 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     while (self.isTruthy(self.evaluate(stmt.condition))):
       self.execute(stmt.body)
     
+    return None
+
+  def visitCallExpr(self, expr: expressions.Call):
+    print(expr.callee)
+    function = self.evaluate(expr.callee)
+
+    arguments = []
+
+    for argument in expr.arguments:
+      arguments.append(self.evaluate(argument)) 
+
+    if (not isinstance(function, LoxCallable)):
+      raise RuntimeError("Can only call functions and classes.")
+
+    # function: LoxCallable = callee
+
+    if (len(arguments) != function.arity()):
+      raise RuntimeError(f"Expected {function.arity()} arguments but got {arguments.size}.")
+
+    return function.call(self, arguments)
+
+  def visitFunctionStmt(self, stmt: statements.Function):
+    function = LoxFunction(stmt)
+    print(stmt.name.lexeme)
+    self.environment.define(stmt.name.lexeme, function)
     return None
