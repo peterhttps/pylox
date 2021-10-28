@@ -1,5 +1,6 @@
 from loxCallable import LoxCallable
 from environment import Environment
+from returnException import ReturnException
 
 class LoxFunction(LoxCallable):
   def __init__(self, declaration):
@@ -11,7 +12,10 @@ class LoxFunction(LoxCallable):
     for i in range(0, len(self.declaration.params)):
       environment.define(self.declaration.params[i].lexeme, arguments[i])
 
-    interpreter.executeBlock(self.declaration.body, environment)
+    try:
+      interpreter.executeBlock(self.declaration.body, environment)
+    except ReturnException as returnC:
+      return returnC.value
 
     return None
 

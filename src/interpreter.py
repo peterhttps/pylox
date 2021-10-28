@@ -4,6 +4,7 @@ from environment import Environment
 import expressions
 from loxCallable import LoxCallable
 from loxFunction import LoxFunction
+from returnException import ReturnException
 import statements
 from tokenType import TokenType
 from parserC import ParserError
@@ -23,7 +24,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
   def evaluate(self, expr: expressions.Expr):
     return expr.accept(self)
-
+  
   def visitUnaryExpr(self, expr: expressions.Unary):
     right = self.evaluate(expr.right)
 
@@ -72,7 +73,12 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
         return float(left) + float(right)
 
       if (isinstance(left, str) and isinstance(right, str)):
-        return str(left) + str(right)
+        try:
+          leftFloat = float(left)
+          rightFloat = float(right)
+          return leftFloat + rightFloat
+        except:
+          return str(left) + str(right)
 
       if (isinstance(left, str) and isinstance(right, float)):
         return float(left) + float(right)
@@ -158,7 +164,6 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
     try:
       self.environment = environment
-
       for statement in statements:
         self.execute(statement)
     finally:
@@ -203,12 +208,11 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
   def visitPrintStmt(self, stmt: statements.Print):
     value = self.evaluate(stmt.expression)
-
+    print(self.stringify(value))
     return None
 
   def visitBlockStmt(self, stmt: statements.Block):
     self.executeBlock(stmt.statements, Environment(self.environment))
-    return None
 
   def visitIfStmt(self, stmt: statements.If):
 
@@ -260,3 +264,11 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
     self.environment.define(stmt.name.lexeme, function)
     return None
+
+  def visitReturnStmt(self, stmt: statements.Return):
+    value = None
+
+    if (stmt.value != None):
+      value = self.evaluate(stmt.value)
+
+    raise ReturnException(value)
