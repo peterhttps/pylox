@@ -260,7 +260,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     return function.call(self, arguments)
 
   def visitFunctionStmt(self, stmt: statements.Function):
-    function = LoxFunction(stmt)
+    function = LoxFunction(stmt, self.environment)
 
     self.environment.define(stmt.name.lexeme, function)
     return None
