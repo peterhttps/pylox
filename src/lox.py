@@ -1,5 +1,6 @@
 import sys
 from interpreter import Interpreter
+from resolver import Resolver
 from scanner import *
 from parserC import ParserC
 from ast_printer import AstPrinter
@@ -38,6 +39,12 @@ class Lox:
     parser = ParserC(tokens)
     statements = parser.parse()
     interpreter = Interpreter()
+
+    if (self.hadError):
+      return
+
+    resolver = Resolver(interpreter)
+    resolver.resolve(statements)
 
     if (self.hadError):
       return

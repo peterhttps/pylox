@@ -13,7 +13,8 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
   def __init__(self):
     self.globals = Environment()
     self.environment = self.globals
-  
+    self.locals = {}
+
     self.globals.define("clock", Clock())
 
   def visitLiteralExpr(self, expr: expressions.Literal):
@@ -145,6 +146,9 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
   def execute(self, stmt: statements.Stmt):
     stmt.accept(self)
 
+  def resolve(self, expr, depth):
+    self.locals[expr] = depth
+
   def stringify(self, object):
     if (object == None):
       return "nil"
@@ -172,7 +176,13 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
   def visitAssignExpr(self, expr: expressions.Assign):
     value = self.evaluate(expr.value)
 
-    self.environment.assign(expr.name, value)
+    distance = self.locals.get(expr)
+
+    if (distance != None):
+      self.environment.assignAt(distance, expr.name, value)
+    else:
+      self.globals.assign(expr.name, value)
+
     return value
   
   def visitGetExpr(self, expr: 'expressions.Expr'):
@@ -191,7 +201,15 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     pass
 
   def visitVariableExpr(self, expr: expressions.Variable):
-    return self.environment.get(expr.name)
+    return self.lookUpVariable(expr.name, expr)
+
+  def lookUpVariable(self, name, expr):
+    distance = self.locals.get(expr)
+
+    if (distance != None):
+      return self.environment.getAt(distance, name.lexeme)
+    else:
+      return self.globals.get(name)
 
   def visitVarStmt(self, stmt: statements.Var):
     value = None

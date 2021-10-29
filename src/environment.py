@@ -1,10 +1,10 @@
+from os import environ
 from parserC import ParserError
 
 class Environment:
   def __init__(self, enclosing=None):
     self.values = {}
     self.enclosing = enclosing
-
 
   def define(self, name, value):
     self.values[name] = value
@@ -28,5 +28,21 @@ class Environment:
       return
 
     raise ParserError(name, f"Undefined variable {name.lexeme}.")
+
+  def getAt(self, distance, name):
+    return self.ancestor(distance).values.get(name)
+
+  def assignAt(self, distance, name, value):
+    self.ancestor(distance).values[name.lexeme] = value
+
+  def ancestor(self, distance):
+    environment = self
+
+    for i in range(0, distance):
+      environment = environment.enclosing
+
+    return environment
+
+  
     
   
