@@ -1,19 +1,26 @@
 from collections import deque
 from enum import Enum
+from os import stat
 
 import expressions
 import statements
 
 class FunctionType(Enum):
-  # Single-character tokens.
   NONE = 1
   FUNCTION = 2
+  METHOD = 3
+  INITIALIZER = 4
+
+class ClassType(Enum):
+  NONE = 1
+  CLASS = 2
 
 class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
   def __init__(self, interpreter):
     self.interpreter = interpreter
     self.scopes = deque()
     self.currentFunction = FunctionType.NONE
+    self.currentClass = ClassType.NONE
 
   def resolve(self, statements):
     self.resolveStatements(statements)
@@ -101,7 +108,7 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
       self.declare(param)
       self.define(param)
 
-    self.resolve(function.body)
+    self.resolveStatements(function.body)
     self.endScope()
 
     self.currentFunction = enclosingFunction 
@@ -126,6 +133,9 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
   def visitReturnStmt(self, stmt: statements.Return):
     if (self.currentFunction == FunctionType.NONE):
       RuntimeError(f"{stmt.keyword} Can't return from top-level code.")
+
+    if (self.currentFunction == FunctionType.INITIALIZER):
+      RuntimeError(f"{stmt.keyword} Can't return a value from an initializer.")
 
     if (stmt.value != None):
       self.resolveExpression(stmt.value)
@@ -171,14 +181,42 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
 
     return None
 
-  def visitGetExpr(self, expr: 'expressions.Expr'):
-    pass
+  def visitGetExpr(self, expr: expressions.Expr):
+    self.resolveExpression(expr.obj)
 
-  def visitSetExpr(self, expr):
-    pass
+  def visitSetExpr(self, expr: expressions.Set):
+    self.resolveExpression(expr.value)
+    self.resolveExpression(expr.obj)
+
+    return None
 
   def visitSuperExpr(self, expr: 'expressions.Expr'):
     pass
 
-  def visitThisExpr(self, expr):
-    pass
+  def visitThisExpr(self, expr: expressions.This):
+    if (self.currentClass == ClassType.NONE):
+      RuntimeError(expr.keyword, "Can't use 'this' outside of a class.")
+
+    self.resolveLocal(expr, expr.keyword)
+    return None
+
+  def visitClassStmt(self, stmt: statements.Class):
+    enclosingClass = self.currentClass
+    self.currentClass = ClassType.CLASS
+
+    self.declare(stmt.name)
+    self.define(stmt.name)
+
+    self.beginScope()
+    self.scopes[-1]["this"] = True
+
+    for method in stmt.methods:
+      declaration = FunctionType.METHOD
+      if (method.name.lexeme == "init"):
+        declaration = FunctionType.INITIALIZER
+      self.resolveFunction(method, declaration)
+
+    self.endScope()
+
+    self.currentClass = enclosingClass
+    return None

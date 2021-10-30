@@ -1,0 +1,10 @@
+class Kitchen {
+  init(food) {
+    this.food = food;
+  }
+  cook() {
+    print "Cooking some " + this.food;
+  }
+}
+
+Kitchen("sushi").cook();

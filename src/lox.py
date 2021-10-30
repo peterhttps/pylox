@@ -1,3 +1,4 @@
+from os import stat
 import sys
 from interpreter import Interpreter
 from resolver import Resolver

@@ -1,0 +1,13 @@
+class Square {
+  init(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  area() {
+    return this.x * this.y;
+  }
+}
+
+var sq = Square(90, 90);
+print sq.area();

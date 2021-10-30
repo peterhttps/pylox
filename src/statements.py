@@ -36,6 +36,10 @@ class StmtVisitor(ABC):
     def visitReturnStmt(self, expr: 'Stmt'):
         pass
 
+    @abstractmethod
+    def visitClassStmt(self, expr: 'Stmt'):
+        pass
+
 class Stmt(ABC):
     @abstractmethod
     def accept(self, visitor: StmtVisitor):
@@ -105,3 +109,11 @@ class Return(Stmt):
 
     def accept(self, visitor: StmtVisitor):
         return visitor.visitReturnStmt(self)
+
+class Class(Stmt):
+    def __init__(self, name, methods):
+        self.name = name
+        self.methods = methods
+
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visitClassStmt(self)

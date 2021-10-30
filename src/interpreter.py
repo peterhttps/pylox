@@ -1,9 +1,11 @@
-from os import stat
+from os import environ, stat
 from clock import Clock
 from environment import Environment
 import expressions
 from loxCallable import LoxCallable
+from loxClass import LoxClass
 from loxFunction import LoxFunction
+from loxInstance import LoxInstance
 from returnException import ReturnException
 import statements
 from tokenType import TokenType
@@ -185,20 +187,33 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
 
     return value
   
-  def visitGetExpr(self, expr: 'expressions.Expr'):
-    pass
+  def visitGetExpr(self, expr: expressions.Get):
+    object = self.evaluate(expr.obj)
+
+    if (isinstance(object, LoxInstance)):
+      return object.get(expr.name)
+    
+    raise RuntimeError(expr.name, "Only instances have properties.")
 
   def visitLogicalExpr(self, expr: 'expressions.Expr'):
     pass
 
-  def visitSetExpr(self, expr: 'expressions.Expr'):
-    pass
+  def visitSetExpr(self, expr: expressions.Set):
+    object = self.evaluate(expr.obj)
+
+    if (not isinstance(object, LoxInstance)):
+      raise RuntimeError(expr.name, "Only instances have fields.")
+    
+    value = self.evaluate(expr.value)
+    object.set(expr.name, value)
+    
+    return value
 
   def visitSuperExpr(self, expr: 'expressions.Expr'):
     pass
 
-  def visitThisExpr(self, expr: 'expressions.Expr'):
-    pass
+  def visitThisExpr(self, expr: expressions.This):
+    return self.lookUpVariable(expr.keyword, expr)
 
   def visitVariableExpr(self, expr: expressions.Variable):
     return self.lookUpVariable(expr.name, expr)
@@ -278,7 +293,7 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
     return function.call(self, arguments)
 
   def visitFunctionStmt(self, stmt: statements.Function):
-    function = LoxFunction(stmt, self.environment)
+    function = LoxFunction(stmt, self.environment, False)
 
     self.environment.define(stmt.name.lexeme, function)
     return None
@@ -290,3 +305,17 @@ class Interpreter(expressions.ExprVisitor, statements.StmtVisitor):
       value = self.evaluate(stmt.value)
 
     raise ReturnException(value)
+
+  def visitClassStmt(self, stmt: statements.Class):
+    self.environment.define(stmt.name.lexeme, None)
+
+    methods = {}
+
+    for method in stmt.methods:
+      function = LoxFunction(method, self.environment, method.name.lexeme == "init")
+      methods[method.name.lexeme] = function
+
+    klass = LoxClass(stmt.name.lexeme, methods)
+    self.environment.assign(stmt.name, klass)
+
+    return None
