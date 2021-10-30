@@ -6,3 +6,8 @@ A python implementation of interpreter for lox language, following the structure
 - [x] Scanning
 - [x] Representing Code
 - [x] Evaluating Expressions
+- [x] Statements and State
+- [x] Control Flow
+- [x] Functions
+- [x] Resolving and Binding
+- [ ] Classes
