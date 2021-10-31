@@ -1,0 +1,16 @@
+class A {
+  init(variableOne) {
+    this.variableOne = variableOne;
+  }
+  method() {
+    print "A method";
+  }
+}
+
+class B < A {
+  init(variableOne) {
+    super.init(variableOne);
+  }
+}
+
+B(10);

@@ -111,9 +111,11 @@ class Return(Stmt):
         return visitor.visitReturnStmt(self)
 
 class Class(Stmt):
-    def __init__(self, name, methods):
+    def __init__(self, name, superclass, methods):
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def accept(self, visitor: StmtVisitor):
         return visitor.visitClassStmt(self)
+        

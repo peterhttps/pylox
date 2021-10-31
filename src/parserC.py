@@ -131,6 +131,11 @@ class ParserC:
       return expressions.Literal(None)
     if (self.match([TokenType.NUMBER, TokenType.STRING])):
       return expressions.Literal(self.previous().literal)
+    if (self.match([TokenType.SUPER])):
+      keyword = self.previous()
+      self.consume(TokenType.DOT, "Expect '.' after 'super'.")
+      method = self.consume(TokenType.IDENTIFIER, "Expect superclass method name.")
+      return expressions.Super(keyword, method)
     if (self.match([TokenType.THIS])):
       return expressions.This(self.previous())
     if (self.match([TokenType.IDENTIFIER])):
@@ -149,7 +154,7 @@ class ParserC:
     raise self.error(self.peek(), message)
 
   def error(self, token, message):
-    return ParserError(token, message)
+    raise ParserError(token, message)
       
   def synchronize(self):
     self.advance()
@@ -201,6 +206,12 @@ class ParserC:
 
   def classDeclaration(self):
     name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+
+    superclass = None
+    if (self.match([TokenType.LESS])):
+      self.consume(TokenType.IDENTIFIER, "Expect superclass name.")
+      superclass = expressions.Variable(self.previous())
+
     self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
 
     methods = []
@@ -210,7 +221,7 @@ class ParserC:
 
     self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
 
-    return statements.Class(name, methods)
+    return statements.Class(name, superclass, methods)
 
   def statement(self):
     if (self.match([TokenType.FOR])):

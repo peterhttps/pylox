@@ -14,6 +14,7 @@ class FunctionType(Enum):
 class ClassType(Enum):
   NONE = 1
   CLASS = 2
+  SUBCLASS = 3
 
 class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
   def __init__(self, interpreter):
@@ -190,8 +191,13 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
 
     return None
 
-  def visitSuperExpr(self, expr: 'expressions.Expr'):
-    pass
+  def visitSuperExpr(self, expr: expressions.Super ):
+    if (self.currentClass == ClassType.NONE):
+      raise RuntimeError(expr.keyword, "Can't use 'super' outside of a class.")
+    elif (self.currentClass != ClassType.SUBCLASS):
+      raise RuntimeError(expr.keyword, "Can't use 'super' in a class with no superclass.")
+    
+    self.resolveLocal(expr, expr.keyword)
 
   def visitThisExpr(self, expr: expressions.This):
     if (self.currentClass == ClassType.NONE):
@@ -207,6 +213,17 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
     self.declare(stmt.name)
     self.define(stmt.name)
 
+    if (stmt.superclass != None and stmt.name.lexeme == stmt.superclass.name.lexeme):
+      RuntimeError(stmt.superclass.name, "A class can't inherit from itself.")
+
+    if (stmt.superclass != None):
+      self.currentClass = ClassType.SUBCLASS
+      self.resolveExpression(stmt.superclass)
+
+    if (stmt.superclass != None):
+      self.beginScope()
+      self.scopes[-1]["super"] = True
+
     self.beginScope()
     self.scopes[-1]["this"] = True
 
@@ -217,6 +234,9 @@ class Resolver(expressions.ExprVisitor, statements.StmtVisitor):
       self.resolveFunction(method, declaration)
 
     self.endScope()
+
+    if (stmt.superclass != None):
+      self.endScope()
 
     self.currentClass = enclosingClass
     return None

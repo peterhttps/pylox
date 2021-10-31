@@ -5,9 +5,10 @@ from loxInstance import LoxInstance
 
 
 class LoxClass(LoxCallable):
-  def __init__(self, name, methods):
+  def __init__(self, name, superclass, methods):
     self.name = name
     self.methods = methods
+    self.superclass = superclass
 
   def toString(self):
     return self.name
@@ -24,6 +25,9 @@ class LoxClass(LoxCallable):
   def findMethod(self, name):
     if (name in self.methods):
       return self.methods.get(name)
+
+    if (self.superclass != None):
+      return self.superclass.findMethod(name)
 
     return None
 
