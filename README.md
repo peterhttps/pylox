@@ -10,4 +10,5 @@ A python implementation of interpreter for lox language, following the structure
 - [x] Control Flow
 - [x] Functions
 - [x] Resolving and Binding
-- [ ] Classes
+- [x] Classes
+- [ ] Inheritance
